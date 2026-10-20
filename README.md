@@ -1,59 +1,154 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Laravel React Task Management
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A task and project management application built with Laravel 12, React 18, React Bootstrap, Vite, and MySQL. The API uses Laravel Passport bearer tokens for authentication. Authenticated users can manage their own projects and tasks and view an at-a-glance dashboard.
 
-## About Laravel
+## Requirements
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- PHP 8.2 or newer with required Laravel extensions enabled
+- Composer 2
+- Node.js 20.19+ or 22.12+ and npm
+- MySQL 8+ (or a compatible MySQL/MariaDB server)
+- On Windows, XAMPP can provide PHP and MySQL; ensure `php`, `composer`, `node`, and `npm` are available in the terminal `PATH`
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Project setup
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+1. Clone or download the repository and open a terminal in the project directory.
+2. Install the PHP and JavaScript dependencies:
 
-## Learning Laravel
+	```bash
+	composer install
+	npm install
+	```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+3. Create the local environment file and generate the Laravel application key:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+	```bash
+	# Windows PowerShell
+	Copy-Item .env.example .env
+	php artisan key:generate
+	```
 
-## Laravel Sponsors
+	On macOS/Linux, use `cp .env.example .env` in place of `Copy-Item`.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+4. Create a MySQL database (default name: `laravel_react_task_mng`) and configure the database values in `.env` as described below.
+5. Run the migrations and prepare Passport:
 
-### Premium Partners
+	```bash
+	php artisan migrate
+	php artisan passport:install
+	```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+	Passport creates the OAuth tables/clients and its signing keys. Keep the generated `storage/oauth-private.key`, `storage/oauth-public.key`, and any client credentials private; do not commit them. If keys need to be regenerated, use `php artisan passport:keys` and create the personal access client required for issuing tokens with `php artisan passport:client --personal`.
 
-## Contributing
+6. Start the application using either the combined development command or separate terminals.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Database setup (MySQL)
 
-## Code of Conduct
+Create the database before running migrations. For example, from the MySQL client:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```sql
+CREATE DATABASE laravel_react_task_mng CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
 
-## Security Vulnerabilities
+Set the matching connection values in `.env`:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```dotenv
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=laravel_react_task_mng
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-## License
+Use the username and password configured for your local MySQL installation. Do not put real production credentials in this README or commit `.env`.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+To initialize or update the schema after changing migrations:
+
+```bash
+php artisan migrate
+```
+
+Optional demo user seeding:
+
+```bash
+php artisan db:seed
+```
+
+The seeder creates `test@example.com` with the local demo password `password` (stored hashed). This is for local development only; use the registration screen to create a different account, and never use the demo credentials in production.
+
+## Environment variables
+
+`.env.example` is the template; copy it to `.env` and adjust values for your machine. Main settings:
+
+| Variable | Purpose | Local default/example |
+| --- | --- | --- |
+| `APP_NAME` | Application display name | `Laravel` |
+| `APP_ENV` | Environment | `local` |
+| `APP_KEY` | Encryption key (generate with `php artisan key:generate`) | Generated value |
+| `APP_DEBUG` | Detailed local error pages; disable in production | `true` |
+| `APP_URL` | Laravel application URL | `http://localhost` |
+| `DB_CONNECTION` | Database driver | `mysql` |
+| `DB_HOST` / `DB_PORT` | MySQL server address and port | `127.0.0.1` / `3306` |
+| `DB_DATABASE` | Database name | `laravel_react_task_mng` |
+| `DB_USERNAME` / `DB_PASSWORD` | MySQL credentials | Local MySQL account |
+| `BCRYPT_ROUNDS` | Password hashing cost | `12` |
+| `PASSPORT_PRIVATE_KEY` / `PASSPORT_PUBLIC_KEY` | Optional Passport key contents when not using key files | Usually unset locally |
+
+Passport normally reads its signing keys from the generated files in `storage/`. Keep `APP_DEBUG=false` and use secure, unique credentials in production.
+
+## Run backend and frontend
+
+### Combined development mode
+
+From the project directory, run:
+
+```bash
+composer run dev
+```
+
+This repository's Composer `dev` script starts the Laravel server, queue listener, log viewer, and Vite. Open the URL printed by Laravel (typically `http://127.0.0.1:8000`). Stop the combined processes with `Ctrl+C`.
+
+### Start services separately
+
+Alternatively, use two terminals:
+
+**Backend:**
+
+```bash
+php artisan serve
+```
+
+**Frontend assets:**
+
+```bash
+npm run dev
+```
+
+Vite serves the React/CSS assets during development through the Laravel Vite integration. For a production asset build, run:
+
+```bash
+npm run build
+```
+
+## Authentication and API
+
+- Registration and login endpoints are `POST /api/auth/register` and `POST /api/auth/login`.
+- Laravel Passport issues OAuth personal access tokens. The frontend saves the returned access token locally and sends it as `Authorization: Bearer <token>` on API requests.
+- Project and task API resource endpoints require the `auth:api` Passport guard; records are scoped to the signed-in user's projects.
+- The application user model uses Laravel's hashed password cast. Do not store plaintext passwords or expose tokens/Passport keys.
+- If setting up Passport manually rather than using `passport:install`, migrate first, generate keys with `php artisan passport:keys`, and create a personal access client with `php artisan passport:client --personal`.
+
+## Tests
+
+Run the Laravel test suite with:
+
+```bash
+php artisan test
+```
+
+Tests use the SQLite in-memory connection configured in `phpunit.xml`, independently of the local MySQL development database.
+
+## AI assistance disclosure
+
+AI tools were used to assist with visual design ideas and UI styling during this machine test. Application requirements, integration, and final verification were completed as part of the implementation process.
