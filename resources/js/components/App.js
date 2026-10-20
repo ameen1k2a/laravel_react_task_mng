@@ -1,15 +1,13 @@
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
 
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import Header from "./layouts/Header";
 import Footer from "./layouts/Footer";
 import { Container } from "react-bootstrap";
 
 // Pages
 import Home from "./pages/Home";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
 import ProjectList from "./pages/projects/ProjectList";
 import ProjectCreate from "./pages/projects/ProjectCreate";
 import ProjectView from "./pages/projects/ProjectView";
@@ -41,17 +39,6 @@ class App extends Component {
           <div>
             <Container className="p-4">
               <Switch>
-                <Route
-                  path={`${PUBLIC_URL}about`}
-                  exact={true}
-                  component={About}
-                />
-                <Route
-                  path={`${PUBLIC_URL}contact`}
-                  exact={true}
-                  component={Contact}
-                />
-
                 {/* Private Authenticated Routes */}
                 <AuthenticatedRoutes
                   authed={this.state.isLoggedIn}
@@ -84,7 +71,17 @@ class App extends Component {
                   exact={true}
                   component={Login}
                 />
-                <Route path={`${PUBLIC_URL}`} exact={true} component={Home} />
+                <Route
+                  path={`${PUBLIC_URL}`}
+                  exact={true}
+                  render={(props) => (
+                    <Home
+                      {...props}
+                      isLoggedIn={this.state.isLoggedIn}
+                      user={this.state.user}
+                    />
+                  )}
+                />
               </Switch>
 
               <Footer />

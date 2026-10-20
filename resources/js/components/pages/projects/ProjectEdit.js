@@ -1,10 +1,8 @@
 import React from "react";
-import { Card, Button, Badge, Spinner, Form } from "react-bootstrap";
-import { Link, withRouter } from "react-router-dom";
-import Axios from "axios";
+import { Card, Button, Spinner, Form } from "react-bootstrap";
+import { withRouter } from "react-router-dom";
 import { PUBLIC_URL } from "../../../constants";
 import {
-  storeNewProject,
   updateProject,
 } from "../../../services/ProjectService";
 
@@ -28,8 +26,6 @@ class ProjectEdit extends React.Component {
 
   submitForm = async (e) => {
     e.preventDefault();
-    const { history } = this.props;
-
     this.setState({ isLoading: true });
     const postBody = {
       name: this.state.name,
@@ -46,7 +42,7 @@ class ProjectEdit extends React.Component {
       this.props.onCompleteProjectEdit();
     } else {
       this.setState({
-        errors: response.errors,
+        errors: response.errors || {},
         isLoading: false,
       });
     }
@@ -113,20 +109,22 @@ class ProjectEdit extends React.Component {
                 </div>
               </div>
 
-              {this.state.isLoading && (
-                <Button variant="primary" type="button" disabled>
-                  <Spinner animation="border" role="status">
-                    <span className="sr-only">Loading...</span>
-                  </Spinner>{" "}
-                  Saving...
-                </Button>
-              )}
+              <div className="d-flex justify-content-end mt-3">
+                {this.state.isLoading && (
+                  <Button variant="primary" type="button" disabled>
+                    <Spinner animation="border" role="status">
+                      <span className="sr-only">Loading...</span>
+                    </Spinner>{" "}
+                    Saving...
+                  </Button>
+                )}
 
-              {!this.state.isLoading && (
-                <Button variant="primary" type="submit">
-                  Save Project
-                </Button>
-              )}
+                {!this.state.isLoading && (
+                  <Button variant="primary" type="submit">
+                    Save Project
+                  </Button>
+                )}
+              </div>
             </Form>
           </Card.Body>
         </Card>

@@ -7,12 +7,15 @@ import Axios from "axios";
  */
 export const checkIfAuthenticated = () => {
   const getLoginData = localStorage.getItem("loginData");
-  if (getLoginData != null) {
-    const data = JSON.parse(getLoginData);
-    if (data.success && data.access_token !== null) {
-      return data.user;
+  if (getLoginData != null && getLoginData !== "null") {
+    try {
+      const data = JSON.parse(getLoginData);
+      if (data && data.success && data.access_token) {
+        return data.user;
+      }
+    } catch (e) {
+      return false;
     }
-    return false;
   }
   return false;
 };
@@ -23,12 +26,9 @@ export const checkIfAuthenticated = () => {
  * @param {object} data
  */
 export const registerUser = async (data) => {
-  return await Axios.post(
-    "http://localhost:8200/myTask/api/auth/register",
-    data
-  ).then((res) => {
-    return res.data;
-  });
+  return await Axios.post("/api/auth/register", data)
+    .then((res) => res.data)
+    .catch((err) => (err.response ? err.response.data : { success: false, message: "Network Error" }));
 };
 
 /**
@@ -37,10 +37,7 @@ export const registerUser = async (data) => {
  * @param {object} data
  */
 export const loginUser = async (data) => {
-  return await Axios.post(
-    "http://localhost:8200/myTask/api/auth/login",
-    data
-  ).then((res) => {
-    return res.data;
-  });
+  return await Axios.post("/api/auth/login", data)
+    .then((res) => res.data)
+    .catch((err) => (err.response ? err.response.data : { success: false, message: "Network Error" }));
 };

@@ -1,7 +1,6 @@
 import React from "react";
-import { Card, Button, Badge, Spinner, Form } from "react-bootstrap";
-import { Link, withRouter } from "react-router-dom";
-import Axios from "axios";
+import { Card, Button, Spinner, Form, Alert } from "react-bootstrap";
+import { withRouter } from "react-router-dom";
 import { PUBLIC_URL } from "../../../constants";
 import { registerUser } from "../../../services/AuthService";
 
@@ -13,30 +12,31 @@ class Register extends React.Component {
     password: "",
     password_confirmation: "",
     errors: {},
-
+    errorMessage: "",
     validated: false,
   };
 
-  componentDidMount() {}
-
   changeInput = (e) => {
+    const { name, value } = e.target;
+    const errors = { ...this.state.errors };
+    delete errors[name];
     this.setState({
-      [e.target.name]: e.target.value,
+      [name]: value,
+      errors,
+      errorMessage: "",
     });
   };
 
   submitForm = async (e) => {
-    const form = event.currentTarget;
+    e.preventDefault();
+    const form = e.currentTarget;
     if (form.checkValidity() === false) {
-      event.preventDefault();
-      event.stopPropagation();
+      e.stopPropagation();
+      this.setState({ validated: true });
+      return;
     }
 
-    this.setState({
-      validated: true,
-    });
-
-    const { history } = this.props;
+    this.setState({ isLoading: true, validated: false, errors: {}, errorMessage: "" });
 
     const postBody = {
       name: this.state.name,
@@ -44,30 +44,19 @@ class Register extends React.Component {
       password: this.state.password,
       password_confirmation: this.state.password_confirmation,
     };
-    if (form.checkValidity() !== false) {
-      event.preventDefault();
-      this.setState({ isLoading: true });
-      const response = await registerUser(postBody);
-      console.log("response register", response);
-      if (response.success) {
-        this.setState({
-          name: "",
-          email: "",
-          password: "",
-          password_confirmation: "",
-          isLoading: false,
-          errors: {},
-        });
-        localStorage.setItem("loginData", JSON.stringify(response));
-        // history.push(`${PUBLIC_URL}projects`);
-      } else {
-        console.log("response.errors", response.errors);
-        this.setState({
-          errors: response.errors,
-          isLoading: false,
-        });
-        localStorage.setItem("loginData", null);
-      }
+
+    const response = await registerUser(postBody);
+    if (response && response.success) {
+      localStorage.setItem("loginData", JSON.stringify(response));
+      window.location.assign(PUBLIC_URL);
+    } else {
+      this.setState({
+        errors: (response && response.errors) || {},
+        errorMessage: (response && response.message) || "Registration failed. Please check inputs.",
+        isLoading: false,
+        validated: false,
+      });
+      localStorage.setItem("loginData", null);
     }
   };
 
@@ -83,14 +72,24 @@ class Register extends React.Component {
 
         <Card>
           <Card.Body>
+            {this.state.errorMessage && (
+              <Alert
+                variant="danger"
+                onClose={() => this.setState({ errorMessage: "" })}
+                dismissible
+              >
+                {this.state.errorMessage}
+              </Alert>
+            )}
+
             <Form
               noValidate
               validated={this.state.validated}
               onSubmit={this.submitForm}
             >
               <div className="row">
-                <div className="col-6">
-                  <Form.Group controlId="name">
+                <div className="col-md-6">
+                  <Form.Group controlId="name" className="mb-3">
                     <Form.Label>Name</Form.Label>
                     <Form.Control
                       required
@@ -108,8 +107,8 @@ class Register extends React.Component {
                     </Form.Control.Feedback>
                   </Form.Group>
                 </div>
-                <div className="col-6">
-                  <Form.Group controlId="email">
+                <div className="col-md-6">
+                  <Form.Group controlId="email" className="mb-3">
                     <Form.Label>Email Address</Form.Label>
                     <Form.Control
                       required
@@ -132,8 +131,8 @@ class Register extends React.Component {
               </div>
 
               <div className="row">
-                <div className="col-6">
-                  <Form.Group controlId="password">
+                <div className="col-md-6">
+                  <Form.Group controlId="password" className="mb-3">
                     <Form.Label>Password</Form.Label>
                     <Form.Control
                       required
@@ -150,17 +149,17 @@ class Register extends React.Component {
                       </p>
                     )}
                     <Form.Control.Feedback type="invalid">
-                      Please give password
+                      Please give password (minimum 8 characters)
                     </Form.Control.Feedback>
                   </Form.Group>
                 </div>
-                <div className="col-6">
-                  <Form.Group controlId="password_confirmation">
+                <div className="col-md-6">
+                  <Form.Group controlId="password_confirmation" className="mb-3">
                     <Form.Label>Confirm Password</Form.Label>
                     <Form.Control
                       required
                       type="password"
-                      placeholder="Enter Password"
+                      placeholder="Enter Confirm Password"
                       value={this.state.password_confirmation}
                       name="password_confirmation"
                       onChange={(e) => this.changeInput(e)}
@@ -173,26 +172,28 @@ class Register extends React.Component {
                         </p>
                       )}
                     <Form.Control.Feedback type="invalid">
-                      Please give confirm password
+                      Please confirm your password
                     </Form.Control.Feedback>
                   </Form.Group>
                 </div>
               </div>
 
-              {this.state.isLoading && (
-                <Button variant="success" type="button" disabled>
-                  <Spinner animation="border" role="status">
-                    <span className="sr-only">Loading...</span>
-                  </Spinner>{" "}
-                  Signing Up...
-                </Button>
-              )}
+              <div className="d-flex justify-content-end mt-3">
+                {this.state.isLoading && (
+                  <Button variant="success" type="button" disabled>
+                    <Spinner animation="border" role="status">
+                      <span className="sr-only">Loading...</span>
+                    </Spinner>{" "}
+                    Signing Up...
+                  </Button>
+                )}
 
-              {!this.state.isLoading && (
-                <Button variant="success" type="submit">
-                  Sign Up
-                </Button>
-              )}
+                {!this.state.isLoading && (
+                  <Button variant="success" type="submit">
+                    Sign Up
+                  </Button>
+                )}
+              </div>
             </Form>
           </Card.Body>
         </Card>

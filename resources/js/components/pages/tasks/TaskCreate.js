@@ -1,9 +1,6 @@
 import React from "react";
-import { Card, Button, Badge, Spinner, Form } from "react-bootstrap";
-import { Link, withRouter } from "react-router-dom";
-import Axios from "axios";
-import { PUBLIC_URL } from "../../../constants";
-import { storeNewProject } from "../../../services/ProjectService";
+import { Card, Button, Spinner, Form } from "react-bootstrap";
+import { withRouter } from "react-router-dom";
 import { storeNewTask } from "../../../services/TaskService";
 
 class TaskCreate extends React.Component {
@@ -22,8 +19,6 @@ class TaskCreate extends React.Component {
 
   submitForm = async (e) => {
     e.preventDefault();
-    const { history } = this.props;
-
     this.setState({ isLoading: true });
     const postBody = {
       name: this.state.name,
@@ -41,7 +36,7 @@ class TaskCreate extends React.Component {
       this.props.onCompleteTaskCreate(response.data);
     } else {
       this.setState({
-        errors: response.errors,
+        errors: response.errors || {},
         isLoading: false,
       });
     }
@@ -91,6 +86,7 @@ class TaskCreate extends React.Component {
                 </div>
               </div>
 
+              <div className="d-flex justify-content-end mt-3">
               {this.state.isLoading && (
                 <Button variant="primary" type="button" disabled>
                   <Spinner animation="border" role="status">
@@ -105,6 +101,7 @@ class TaskCreate extends React.Component {
                   Save Task
                 </Button>
               )}
+              </div>
             </Form>
           </Card.Body>
         </Card>

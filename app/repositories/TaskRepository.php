@@ -8,15 +8,18 @@ use Illuminate\Http\Request;
 
 class TaskRepository implements CrudInterface
 {
-    public function getAll()
+    public function getAll($userId = null)
     {
-        $tasks = Task::orderBy('id', 'desc')->get();
+        $tasks = Task::whereHas('project', function ($query) use ($userId) {
+            $query->where('user_id', $userId);
+        })->orderBy('id', 'desc')->get();
         return $tasks;
     }
-    public function findById($id)
+    public function findById($id, $userId = null)
     {
-        $task = Task::with('project')
-            ->find($id);
+        $task = Task::whereHas('project', function ($query) use ($userId) {
+            $query->where('user_id', $userId);
+        })->with('project')->find($id);
         return $task;
     }
     public function create(Request $request)
@@ -25,23 +28,27 @@ class TaskRepository implements CrudInterface
         $task->name = $request->name;
         $task->description = $request->description;
         $task->project_id = $request->project_id;
-        $task->status = 0;
         $task->save();
         return $task;
     }
     public function edit(Request $request, $id)
     {
-        $task = $this->findById($id);
+        $task = $this->findById($id, $request->user()->id);
         $task->name = $request->name;
         $task->description = $request->description;
         $task->project_id = $request->project_id;
-        $task->status = $request->status;
+        if ($request->has('status')) {
+            $task->status = $request->status;
+        }
         $task->save();
         return $task;
     }
-    public function delete($id)
+    public function delete($id, $userId = null)
     {
-        $task = $this->findById($id);
+        $task = $this->findById($id, $userId);
+        if (!$task) {
+            return null;
+        }
         $task->delete();
         return $task;
     }

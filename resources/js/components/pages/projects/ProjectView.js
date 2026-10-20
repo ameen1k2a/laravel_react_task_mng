@@ -21,6 +21,7 @@ class ProjectView extends React.Component {
     taskList: [],
     searchTaskList: [],
     isLoading: false,
+    loadError: "",
 
     toggleAddTask: false,
     toggleEditProject: false,
@@ -29,22 +30,32 @@ class ProjectView extends React.Component {
   };
 
   componentDidMount() {
-    console.log(this.props.match.params.id);
     this.getProjectDetails();
   }
 
   getProjectDetails = () => {
     this.setState({ isLoading: true });
-    Axios.get(
-      `http://localhost:8200/myTask/api/projects/${this.props.match.params.id}`
-    ).then((res) => {
-      this.setState({
-        taskList: res.data.data.tasks,
-        searchTaskList: res.data.data.tasks,
-        project: res.data.data,
-        isLoading: false,
+    Axios.get(`/api/projects/${this.props.match.params.id}`)
+      .then((res) => {
+        const project = res.data && res.data.success ? res.data.data : null;
+        const tasks = project && Array.isArray(project.tasks) ? project.tasks : [];
+        this.setState({
+          taskList: tasks,
+          searchTaskList: tasks,
+          project: project || {},
+          loadError: project ? "" : "Project could not be found.",
+          isLoading: false,
+        });
+      })
+      .catch(() => {
+        this.setState({
+          taskList: [],
+          searchTaskList: [],
+          project: {},
+          loadError: "Unable to load this project. Please try again.",
+          isLoading: false,
+        });
       });
-    });
   };
 
   toggleAddTask = () => {
@@ -63,8 +74,7 @@ class ProjectView extends React.Component {
 
   onCompleteTaskCreate = (task) => {
     this.toggleAddTask();
-    let tasks = this.state.taskList;
-    tasks.unshift(task);
+    const tasks = [task, ...this.state.taskList];
     this.setState({
       taskList: tasks,
       searchTaskList: tasks,
@@ -139,11 +149,11 @@ class ProjectView extends React.Component {
               />
             </InputGroup>
           </div>
-          <div className="float-right">
+          <div className="d-flex justify-content-end align-items-center gap-2 flex-wrap ms-auto">
             <button
               className={`btn btn-outline-${
                 this.state.project.status === 1 ? "success" : "info"
-              } mr-2`}
+              }`}
               disabled
             >
               {this.state.project.status === 1 && (
@@ -154,22 +164,25 @@ class ProjectView extends React.Component {
               )}
             </button>
             <Button
-              className="btn btn-success mr-2"
+              className="btn btn-success"
               onClick={() => this.toggleEditProject()}
             >
               {!this.state.toggleEditProject && <span>Edit </span>}
               {this.state.toggleEditProject && <span>Cancel Editing</span>}
             </Button>
             <Button
-              className="btn btn-info mr-2"
+              className="btn btn-info"
               onClick={() => this.toggleAddTask()}
             >
               {!this.state.toggleAddTask && <span>+ Add Task</span>}
               {this.state.toggleAddTask && <span>Cancel Adding</span>}
             </Button>
           </div>
-          <div className="clearfix"></div>
         </div>
+
+        {this.state.loadError && (
+          <Alert variant="danger">{this.state.loadError}</Alert>
+        )}
 
         {this.state.toggleAddTask && (
           <TaskCreate

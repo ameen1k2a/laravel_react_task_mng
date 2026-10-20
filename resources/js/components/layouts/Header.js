@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Container, NavDropdown, Nav, Navbar } from "react-bootstrap";
+import React from "react";
+import { Container, Nav, Navbar } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { PUBLIC_URL } from "../../constants";
 
@@ -10,47 +10,46 @@ const Header = (props) => {
   };
 
   return (
-    <Navbar bg="dark" variant="dark" expand="lg" sticky="top">
+    <Navbar bg="dark" variant="dark" expand="lg" sticky="top" className="shadow-sm">
       <Container>
-        <Link to={`${PUBLIC_URL}`}>
-          <Navbar.Brand>Task Management</Navbar.Brand>
+        <Link to={`${PUBLIC_URL}`} className="d-flex align-items-center text-decoration-none">
+          <Navbar.Brand className="mb-0">Task Management</Navbar.Brand>
         </Link>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="mr-auto">
+          <Nav className="me-auto mr-auto align-items-lg-center">
             <Link to={`${PUBLIC_URL}`}>
-              <Nav.Item className="text-white mr-2 ">Home</Nav.Item>
+              <Nav.Item className="text-white mr-2 me-2">Home</Nav.Item>
             </Link>
             {props.authData.isLoggedIn && (
               <Link to={`${PUBLIC_URL}projects`}>
-                <Nav.Item className="text-white mr-2 ">Projects</Nav.Item>
+                <Nav.Item className="text-white mr-2 me-2">Projects</Nav.Item>
               </Link>
             )}
-            <Link to={`${PUBLIC_URL}about`}>
-              <Nav.Item className="text-white mr-2 ">About</Nav.Item>
-            </Link>
-            <Link to={`${PUBLIC_URL}contact`}>
-              <Nav.Item className="text-white mr-2 ">Contact</Nav.Item>
-            </Link>
-
             {!props.authData.isLoggedIn && (
               <>
                 <Link to={`${PUBLIC_URL}login`}>
-                  <Nav.Item className="text-white mr-2 ">Sign In</Nav.Item>
+                  <Nav.Item className="text-white mr-2 me-2">Sign In</Nav.Item>
                 </Link>
                 <Link to={`${PUBLIC_URL}register`}>
-                  <Nav.Item className="text-white mr-2 ">Sign Up</Nav.Item>
+                  <Nav.Item className="text-white mr-2 me-2">Sign Up</Nav.Item>
                 </Link>
               </>
             )}
           </Nav>
-          <Nav className="ml-auto">
+          <Nav className="ms-auto ml-auto align-items-lg-center">
             {props.authData.isLoggedIn && (
               <>
-                <Nav.Link>Welcome, {props.authData.user.name}</Nav.Link>
-                <Nav.Link onClick={() => logout()}>
-                  <Nav.Item className="text-white mr-2 ">Logout</Nav.Item>
-                </Nav.Link>
+                <span className="text-light mr-3 me-3 font-weight-bold">
+                  Welcome, {props.authData.user ? props.authData.user.name : "User"}
+                </span>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-danger"
+                  onClick={() => logout()}
+                >
+                  Logout
+                </button>
               </>
             )}
           </Nav>

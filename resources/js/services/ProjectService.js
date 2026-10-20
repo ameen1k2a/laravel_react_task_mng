@@ -1,11 +1,9 @@
 import Axios from "axios";
 
 export const getProjectList = async () => {
-  return await Axios.get("http://localhost:8200/myTask/api/projects").then(
-    (res) => {
-      return res.data;
-    }
-  );
+  return await Axios.get("/api/projects")
+    .then((res) => res.data)
+    .catch((err) => (err.response ? err.response.data : { success: false, data: [] }));
 };
 
 /**
@@ -14,30 +12,19 @@ export const getProjectList = async () => {
  * @param {object} data
  */
 export const storeNewProject = async (data) => {
-  data.user_id = 1;
-  return await Axios.post(
-    "http://localhost:8200/myTask/api/projects",
-    data
-  ).then((res) => {
-    return res.data;
-  });
+  return await Axios.post("/api/projects", data)
+    .then((res) => res.data)
+    .catch((err) => (err.response ? err.response.data : { success: false, message: "Network Error" }));
 };
 
 export const updateProject = async (id, data) => {
-  data.user_id = 1;
-  return await Axios.put(
-    `http://localhost:8200/myTask/api/projects/${id}`,
-    data
-  ).then((res) => {
-    return res.data;
-  });
+  return await Axios.put(`/api/projects/${id}`, data)
+    .then((res) => res.data)
+    .catch((err) => (err.response ? err.response.data : { success: false, message: "Network Error" }));
 };
 
 export const deleteProject = async (id) => {
-  console.log("id", id);
-  return await Axios.delete(
-    `http://localhost:8200/myTask/api/projects/${id}`
-  ).then((res) => {
-    return res.data;
-  });
+  return await Axios.delete(`/api/projects/${id}`)
+    .then((res) => res.data)
+    .catch((err) => (err.response ? err.response.data : { success: false, message: "Network Error" }));
 };

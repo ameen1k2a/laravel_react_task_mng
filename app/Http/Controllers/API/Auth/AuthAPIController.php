@@ -4,9 +4,8 @@ namespace App\Http\Controllers\API\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
-use App\User;
 use App\repositories\AuthRepository;
 
 class AuthAPIController extends Controller
@@ -18,21 +17,15 @@ class AuthAPIController extends Controller
         $this->authRepository = $authRepository;
     }
 
-    public function createToken()
-    {
-        $user = User::first();
-        $accessToken = $user->createToken('Token Name')->accessToken;
-        return $accessToken;
-    }
-
     public function login(Request $request)
     {
         $formData = $request->all();
-        $validator = \Validator::make($formData, [
-            'email' => 'required',
+        $validator = Validator::make($formData, [
+            'email' => 'required|email',
             'password' => 'required',
         ], [
             'email.required' => 'Please give your email address',
+            'email.email' => 'Please give a valid email address',
             'password.required' => 'Please give your password',
         ]);
         if ($validator->fails()) {
@@ -44,7 +37,7 @@ class AuthAPIController extends Controller
         }
 
         if ($this->authRepository->checkIfAuthenticated($request)) {
-            $user = $this->authRepository->findUserByEmailAddress($request->email);
+            $user = $this->authRepository->findUserByEmailAddress(mb_strtolower(trim((string) $request->email)));
             $accessToken = $user->createToken('authToken')->accessToken;
             return response()->json([
                 'success' => true,
@@ -63,8 +56,9 @@ class AuthAPIController extends Controller
 
     public function register(Request $request)
     {
+        $request->merge(['email' => mb_strtolower(trim((string) $request->email))]);
         $formData = $request->all();
-        $validator = \Validator::make($formData, [
+        $validator = Validator::make($formData, [
             'name' => 'required|min:3|max:30',
             'email' => 'required|email|max:100|unique:users',
             'password' => 'required|confirmed|min:8',

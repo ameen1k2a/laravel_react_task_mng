@@ -1,7 +1,6 @@
 import React from "react";
-import { Card, Button, Badge, Spinner, Form } from "react-bootstrap";
+import { Card, Button, Spinner, Form } from "react-bootstrap";
 import { Link, withRouter } from "react-router-dom";
-import Axios from "axios";
 import { PUBLIC_URL } from "../../../constants";
 import { storeNewProject } from "../../../services/ProjectService";
 
@@ -41,7 +40,7 @@ class ProjectCreate extends React.Component {
     } else {
       console.log("response.errors", response.errors);
       this.setState({
-        errors: response.errors,
+        errors: response.errors || {},
         isLoading: false,
       });
     }
@@ -97,20 +96,22 @@ class ProjectCreate extends React.Component {
                 </p>
               )}
 
-              {this.state.isLoading && (
-                <Button variant="primary" type="button" disabled>
-                  <Spinner animation="border" role="status">
-                    <span className="sr-only">Loading...</span>
-                  </Spinner>{" "}
-                  Saving...
-                </Button>
-              )}
+              <div className="d-flex justify-content-end mt-3">
+                {this.state.isLoading && (
+                  <Button variant="primary" type="button" disabled>
+                    <Spinner animation="border" role="status">
+                      <span className="sr-only">Loading...</span>
+                    </Spinner>{" "}
+                    Saving...
+                  </Button>
+                )}
 
-              {!this.state.isLoading && (
-                <Button variant="primary" type="submit">
-                  Save Project
-                </Button>
-              )}
+                {!this.state.isLoading && (
+                  <Button variant="primary" type="submit">
+                    Save Project
+                  </Button>
+                )}
+              </div>
             </Form>
           </Card.Body>
         </Card>

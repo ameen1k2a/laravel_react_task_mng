@@ -132,19 +132,20 @@ class ProjectList extends React.Component {
             <Card.Body>
               <Card.Text>{project.description}</Card.Text>
               {/* <TaskList taskList={project.tasks} isDetailsView={false} /> */}
+              <div className="d-flex justify-content-end gap-2">
               <Link
                 to={`${PUBLIC_URL}projects/view/${project.id}`}
-                className="btn btn-primary mr-2"
+                className="btn btn-primary"
               >
                 View & Edit
               </Link>
               <Button
                 variant="danger"
-                className="mr-2"
                 onClick={() => this.deleteProject(project.id)}
               >
                 Delete
               </Button>
+            </div>
             </Card.Body>
           </Card>
         ))}

@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, Button, Badge, Spinner, Form, Alert } from "react-bootstrap";
-import { Link, withRouter } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 import { PUBLIC_URL } from "../../../constants";
 import { loginUser } from "../../../services/AuthService";
 
@@ -14,56 +14,46 @@ class Login extends React.Component {
     validated: false,
   };
 
-  componentDidMount() {}
-
   changeInput = (e) => {
+    const { name, value } = e.target;
+    const errors = { ...this.state.errors };
+    delete errors[name];
     this.setState({
-      [e.target.name]: e.target.value,
+      [name]: value,
+      errors,
+      errorMessage: "",
     });
   };
 
   submitForm = async (e) => {
-    const form = event.currentTarget;
+    e.preventDefault();
+    const form = e.currentTarget;
     if (form.checkValidity() === false) {
-      event.preventDefault();
-      event.stopPropagation();
+      e.stopPropagation();
+      this.setState({ validated: true });
+      return;
     }
 
-    this.setState({
-      validated: true,
-    });
-
-    const { history } = this.props;
+    this.setState({ isLoading: true, validated: false, errors: {}, errorMessage: "" });
 
     const postBody = {
       email: this.state.email,
       password: this.state.password,
     };
-    if (form.checkValidity() !== false) {
-      event.preventDefault();
-      this.setState({ isLoading: true });
-      const response = await loginUser(postBody);
-      console.log("response register", response);
-      if (response.success) {
-        this.setState({
-          email: "",
-          password: "",
-          isLoading: false,
-          errors: {},
-          errorMessage: "",
-        });
-        localStorage.setItem("loginData", JSON.stringify(response));
-        // history.replace(`${PUBLIC_URL}projects`);
-        window.location.href = PUBLIC_URL;
-      } else {
-        console.log("response.errors", response.errors);
-        this.setState({
-          errors: response.errors,
-          isLoading: false,
-          errorMessage: response.message,
-        });
-        localStorage.setItem("loginData", null);
-      }
+
+    const response = await loginUser(postBody);
+    if (response && response.success) {
+      localStorage.setItem("loginData", JSON.stringify(response));
+      // Reload the home route so the application header picks up the new session.
+      window.location.assign(PUBLIC_URL);
+    } else {
+      this.setState({
+        errors: (response && response.errors) || {},
+        isLoading: false,
+        validated: false,
+        errorMessage: (response && response.message) || "Invalid email or password",
+      });
+      localStorage.setItem("loginData", null);
     }
   };
 
@@ -71,7 +61,7 @@ class Login extends React.Component {
     return (
       <>
         <div className="header-part">
-          <div className="text-center">
+          <div className="float-left">
             <h2>Sign In</h2>
           </div>
           <div className="clearfix"></div>
@@ -83,10 +73,10 @@ class Login extends React.Component {
           onSubmit={this.submitForm}
         >
           <div className="row justify-content-center">
-            <div className="col-8">
+            <div className="col-md-8">
               <Card>
                 <Card.Body>
-                  {this.state.errorMessage.length > 0 && (
+                  {this.state.errorMessage && (
                     <Alert
                       variant="danger"
                       onClose={() => this.setState({ errorMessage: "" })}
@@ -96,7 +86,7 @@ class Login extends React.Component {
                     </Alert>
                   )}
 
-                  <Form.Group controlId="email">
+                  <Form.Group controlId="email" className="mb-3">
                     <Form.Label>Email Address</Form.Label>
                     <Form.Control
                       required
@@ -116,7 +106,7 @@ class Login extends React.Component {
                     </Form.Control.Feedback>
                   </Form.Group>
 
-                  <Form.Group controlId="password">
+                  <Form.Group controlId="password" className="mb-3">
                     <Form.Label>Password</Form.Label>
                     <Form.Control
                       required
@@ -125,7 +115,6 @@ class Login extends React.Component {
                       value={this.state.password}
                       name="password"
                       onChange={(e) => this.changeInput(e)}
-                      minLength={8}
                     />
                     {this.state.errors && this.state.errors.password && (
                       <p className="text-danger">
@@ -137,20 +126,22 @@ class Login extends React.Component {
                     </Form.Control.Feedback>
                   </Form.Group>
 
-                  {this.state.isLoading && (
-                    <Button variant="success" type="button" disabled block>
-                      <Spinner animation="border" role="status">
-                        <span className="sr-only">Loading...</span>
-                      </Spinner>{" "}
-                      Signing In...
-                    </Button>
-                  )}
+                  <div className="d-flex justify-content-end mt-3">
+                    {this.state.isLoading && (
+                      <Button variant="success" type="button" disabled>
+                        <Spinner animation="border" role="status">
+                          <span className="sr-only">Loading...</span>
+                        </Spinner>{" "}
+                        Signing In...
+                      </Button>
+                    )}
 
-                  {!this.state.isLoading && (
-                    <Button variant="success" type="submit" block>
-                      Sign In
-                    </Button>
-                  )}
+                    {!this.state.isLoading && (
+                      <Button variant="success" type="submit">
+                        Sign In
+                      </Button>
+                    )}
+                  </div>
                 </Card.Body>
               </Card>
             </div>
